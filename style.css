@@ -1,0 +1,27 @@
+html{ 
+	overflow-y:scroll; 
+}
+body{ 
+	margin:0;
+	font-size:12px;
+}
+small{
+	color:#777;
+}
+.off{
+	display:none;
+}
+h1{
+	margin:0;
+	padding:7px 15px;
+	font-size:14px;
+	border-bottom:2px solid #ccc;
+	background-color:#333;
+	color:#ccc;
+}
+#container{
+	margin:10px;
+}
+table{
+	font-size:12px;
+}

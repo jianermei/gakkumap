@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ksjc:GI xmlns:ksjc="http://nlftp.mlit.go.jp/ksj/schemas/ksj-app-cd" xmlns:jps="http://www.gsi.go.jp/GIS/jpgis/standardSchemas" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://nlftp.mlit.go.jp/ksj/schemas/ksj-app-cd PrefCd.xsd" version="1.0" timeStamp="2007-03-23T00:00:00">
+	<exchangeMetadata>
+		<datasetCitation>
+			<jps:CI_Citation.title>都道府県コード</jps:CI_Citation.title>
+			<jps:CI_Citation.date>
+				<jps:CI_Date>
+					<CI_Date.date>2007-03-23</CI_Date.date>
+					<CI_Date.dateType>001</CI_Date.dateType>
+				</jps:CI_Date>
+			</jps:CI_Citation.date>
+		</datasetCitation>
+		<encodingRule>
+			<encodingRuleCitation>
+				<jps:CI_Citation.title>PrefCd.xsd</jps:CI_Citation.title>
+				<jps:CI_Citation.date>
+					<jps:CI_Date>
+						<CI_Date.date>2007-03-23</CI_Date.date>
+						<CI_Date.dateType>001</CI_Date.dateType>
+					</jps:CI_Date>
+				</jps:CI_Citation.date>
+			</encodingRuleCitation>
+			<toolName>なし</toolName>
+			<toolVersion>なし</toolVersion>
+		</encodingRule>
+	</exchangeMetadata>
+	<dataset>
+		<ksjc:object>
+			<ksjc:PrefCd>
+				<description>都道府県コード</description>
+				<codelabel label="北海道" code="01"/>
+				<codelabel label="青森県" code="02"/>
+				<codelabel label="岩手県" code="03"/>
+				<codelabel label="宮城県" code="04"/>
+				<codelabel label="秋田県" code="05"/>
+				<codelabel label="山形県" code="06"/>
+				<codelabel label="福島県" code="07"/>
+				<codelabel label="茨城県" code="08"/>
+				<codelabel label="栃木県" code="09"/>
+				<codelabel label="群馬県" code="10"/>
+				<codelabel label="埼玉県" code="11"/>
+				<codelabel label="千葉県" code="12"/>
+				<codelabel label="東京都" code="13"/>
+				<codelabel label="神奈川県" code="14"/>
+				<codelabel label="新潟県" code="15"/>
+				<codelabel label="富山県" code="16"/>
+				<codelabel label="石川県" code="17"/>
+				<codelabel label="福井県" code="18"/>
+				<codelabel label="山梨県" code="19"/>
+				<codelabel label="長野県" code="20"/>
+				<codelabel label="岐阜県" code="21"/>
+				<codelabel label="静岡県" code="22"/>
+				<codelabel label="愛知県" code="23"/>
+				<codelabel label="三重県" code="24"/>
+				<codelabel label="滋賀県" code="25"/>
+				<codelabel label="京都府" code="26"/>
+				<codelabel label="大阪府" code="27"/>
+				<codelabel label="兵庫県" code="28"/>
+				<codelabel label="奈良県" code="29"/>
+				<codelabel label="和歌山県" code="30"/>
+				<codelabel label="鳥取県" code="31"/>
+				<codelabel label="島根県" code="32"/>
+				<codelabel label="岡山県" code="33"/>
+				<codelabel label="広島県" code="34"/>
+				<codelabel label="山口県" code="35"/>
+				<codelabel label="徳島県" code="36"/>
+				<codelabel label="香川県" code="37"/>
+				<codelabel label="愛媛県" code="38"/>
+				<codelabel label="高知県" code="39"/>
+				<codelabel label="福岡県" code="40"/>
+				<codelabel label="佐賀県" code="41"/>
+				<codelabel label="長崎県" code="42"/>
+				<codelabel label="熊本県" code="43"/>
+				<codelabel label="大分県" code="44"/>
+				<codelabel label="宮崎県" code="45"/>
+				<codelabel label="鹿児島県" code="46"/>
+				<codelabel label="沖縄県" code="47"/>
+			</ksjc:PrefCd>
+		</ksjc:object>
+	</dataset>
+</ksjc:GI>

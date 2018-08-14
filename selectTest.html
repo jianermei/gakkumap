@@ -1,0 +1,131 @@
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<title>学区検索マップ</title>
+<link rel="stylesheet" type="text/css" href="/style.css">
+<!--<script type="text/javascript" src="/files/jquery-1.9.0.min.js"></script>-->
+<script
+  src="https://code.jquery.com/jquery-1.10.1.min.js"
+  integrity="sha256-SDf34fFWX/ZnUozXXEH0AeB+Ip3hvRsjLwp6QNTEb3k="
+  crossorigin="anonymous"></script>
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<!--<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>-->
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPVUTcd3IfbTtzVqBzrC4f48_TaaI_26U&callback=initMap">
+    </script>
+<script type="text/javascript" src="setSelectOpt.js"></script>
+<!--<script type="text/javascript" src="getPrefCoords.js"></script>-->
+<!--<script type="text/javascript" src="getCityCoords.js"></script>-->
+<script type="text/javascript" src="getSchoolCoords.js"></script>
+<script>
+
+var map;
+var infoWindow;
+var bounds;
+var adminArea, adminLine;
+var selp;
+var sArea, sLine;
+
+var prefCode, prefName;
+var cityCode, cityCodeU, cityCodeL;
+var cityName, cityNameU, cityNameL;
+var gaikuCode, gaikuName;
+
+var h22ka;			//町・字用xmlファイル名用
+var h22kaXml;
+var bdCoords = new Array();
+
+$(document).ready(function(){
+	//initialize();
+	setPref();	//setSelectOpt.js
+});
+function initMap() {
+  //var myLatLng = new google.maps.LatLng(35.7873194, 140.029875);	//白井市
+  //var myLatLng = new google.maps.LatLng(38.38095993790538,140.27592658996582);	//寒河江市
+
+  var mapOptions = {
+    zoom: 10,
+    center: {lat: 38.38095993790538, lng: 140.27592658996582},
+    draggableCursor : 'default',
+    mapTypeId: 'roadmap'
+  };
+
+  map = new google.maps.Map(document.getElementById('map_canvas'),
+      mapOptions);
+}
+function selectProc(){
+	// if($('#city option:selected').val() == "00"){
+	//	//都道府県界の描画処理
+	//	getPrefCoords();
+	// }else if($('#gaiku option:selected').val() == "00"){
+	//	//市区町村界の描画処理
+	//	getCityCoords();
+	// }else{
+	if($('#city option:selected').val() != "00"){
+		//"字・町丁界の描画処理
+		getGaikuCoords();
+		//renderGaiku();
+	}
+}
+
+// リセット処理
+function deletePoly() {
+	// ポリゴンの削除
+	if (sArea) {
+		var area
+		while (area = sArea.pop()) {
+			area.setMap(null);
+		}
+	}
+	// ポリラインの削除
+	if (sLine) {
+		for(var i = 0; i < sLine.length; i++){
+			sLine[i].setMap(null);
+		}
+	}
+}
+
+</script>
+</head>
+<!--<body onload="initialize()">-->
+<body>
+
+<h1>学区検索マップ（ALPHA）</h1>
+
+<div id="container">
+
+<div style="width:260px;float:right;padding:0 0 0 10px;">
+<form name="form1">
+<p>
+<input type="radio" name="ptype" value="1"/>ポリゴン
+<input type="radio" name="ptype" value="2" checked />ポリライン
+</p>
+<table>
+<tr>
+<td>都道府県</td><td><select id="pref"><option value="00" selected>--選択--</option></select></td>
+</tr>
+<tr>
+<td>市区町村</td><td><select id="city"><option value="00" selected>--選択--</option></select></td>
+</tr>
+<tr>
+<td>学校</td><td><select id="gaiku"><option value="00" selected>--選択--</option></select></td>
+</tr>
+<tr>
+<td><input type="button" value="描画" onclick="selectProc()" /></td>
+<td><input type="button" value="描画削除" onclick="deletePoly()" /></td>
+</tr>
+</table>
+</form>
+
+</p>
+</div><!-- //float right box -->
+
+<div id="map_canvas" style="border: 1px solid black; height:530px"></div>
+</div><!-- //container -->
+<div id="output"></div>
+
+<span id="mode"></span>
+</body>
+</html>
+
