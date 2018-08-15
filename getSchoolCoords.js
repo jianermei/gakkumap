@@ -2,6 +2,46 @@
 
 *************************************************************/
 
+function getSchoolCoords(){
+	//学校名・コード
+	schoolCode = $('#gaiku option:selected').val();
+	schoolName = $('#gaiku option:selected').text();
+	bdCoords.length = 0;
+    $(A27Xml).find("jps\\:GM_Surface").each(function(){
+    	if ($(this).attr('id') == schoolCode) {
+    		$(this).find("jps\\:GM_CompositeCurve\\.generator").each(function(){
+    			CompositeCurveCode = $(this).attr('idref');
+    			
+    			$(this).closest("ksj\\:OBJ").find("jps\\:GM_OrientableCurve").each(function(){
+    				if ( $(this).attr('id') == CompositeCurveCode ) {
+    					$(this).find("jps\\:GM_OrientablePrimitive\\.primitive").each(function(){
+    						CurveCode = $(this).attr('idref');
+    						console.log("i am here too!")
+    						
+    						$(this).closest("ksj\\:OBJ").find("jps\\:GM_Curve").each(function(){
+    							if ( $(this).attr('id') == CurveCode ) {
+    								i = 0;
+    								$(this).find("DirectPosition\\.coordinate").each(function(){
+    									var coords = $(this).text();
+    									var bLatlng = coords.split(" ");
+						    			console.log("i am here!")
+										bdCoords[i] = new Array();
+										bdCoords[i][0] = bLatlng[0];
+										bdCoords[i][1] = bLatlng[1];
+										i++;
+    								});
+    							}
+    						});
+    					});
+    				}
+    			});    		    			    			
+    		});
+    	}
+    });
+    
+    renderGaiku();
+}
+
 function getGaikuCoords(){
 	//町字名・コード
 	gaikuCode = $('#gaiku option:selected').val();

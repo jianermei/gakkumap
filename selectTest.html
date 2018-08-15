@@ -3,7 +3,7 @@
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 <title>学区検索マップ</title>
-<link rel="stylesheet" type="text/css" href="/style.css">
+<link rel="stylesheet" type="text/css" href="/gakkumap/style.css">
 <!--<script type="text/javascript" src="/files/jquery-1.9.0.min.js"></script>-->
 <script
   src="https://code.jquery.com/jquery-1.10.1.min.js"
@@ -14,10 +14,10 @@
 <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPVUTcd3IfbTtzVqBzrC4f48_TaaI_26U&callback=initMap">
     </script>
-<script type="text/javascript" src="setSelectOpt.js"></script>
+<script type="text/javascript" src="/gakkumap/setSelectOpt.js"></script>
 <!--<script type="text/javascript" src="getPrefCoords.js"></script>-->
 <!--<script type="text/javascript" src="getCityCoords.js"></script>-->
-<script type="text/javascript" src="getSchoolCoords.js"></script>
+<script type="text/javascript" src="/gakkumap/getSchoolCoords.js"></script>
 <script>
 
 var map;
@@ -64,7 +64,7 @@ function selectProc(){
 	// }else{
 	if($('#city option:selected').val() != "00"){
 		//"字・町丁界の描画処理
-		getGaikuCoords();
+		getSchoolCoords();
 		//renderGaiku();
 	}
 }

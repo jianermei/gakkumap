@@ -6,7 +6,7 @@
 function setPref(){
   $.ajax({
     type: "GET",
-    url: "/PrefCd.xml",
+    url: "/gakkumap/PrefCd.xml",
     dataType: "xml",
     success: function(xml){
 			//都道府県名・コードを抽出し、SELECT ボックスに設定
@@ -29,7 +29,7 @@ function setPref(){
 function setCity(){
   $.ajax({
     type: "GET",
-    url: "/AdminAreaCd.xml",
+    url: "/gakkumap/AdminAreaCd.xml",
     dataType: "xml",
     success: function(xml){
 			$("#city").html('');
@@ -71,9 +71,10 @@ function setCity(){
 function setSchool(dir, file){
 	$.ajax({
     type: "GET",
-    url: "/A27-10_13.xml",
+    url: "/gakkumap/A27-10_13.xml",
     dataType: "xml",
     success:function(xml){
+			A27Xml = xml;	//xml退避
 			$("#gaiku").html('');
 			wopt = document.createElement('option');
 			wopt.setAttribute('value', '00');
@@ -83,15 +84,17 @@ function setSchool(dir, file){
 			//町・字名・コードを抽出し、SELECT ボックスに設定
 			var val;
 			$(xml).find('ksj\\:OBJ').each(function(){
-					$(this).find("ksj\\:SD01").each(function(){
+					// 通学区域
+					$(this).find("ksj\\:SD02").each(function(){
+							// 市区町村コード
 							$(this).find("ksj\\:CCD").each(function(){
 									if ($(this)[0].textContent == cityCode ) {
 								    	wopt = document.createElement('option');
 										// 学校コード
-										schoolCode = $(this).closest("ksj\\:SD01").attr("id");
+										schoolCode = $(this).closest("ksj\\:SD02").children("ksj\\:ARE").attr("idref");
 								    	wopt.setAttribute('value', schoolCode);
 										// 学校名
-										esn = $(this).closest("ksj\\:SD01").children("ksj\\:ESN");
+										esn = $(this).closest("ksj\\:SD02").children("ksj\\:ESN");
 										shcoolName = esn[0].textContent;
 								    	$(wopt).append(shcoolName);
 										$("#gaiku").append(wopt);
