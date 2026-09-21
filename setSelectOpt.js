@@ -2,11 +2,32 @@
 	select box のオプションを設定する
 *************************************************************/
 
+// Ignore responses for selections that have since changed.
+var cityLoadVersion = 0;
+var schoolLoadVersion = 0;
+var schoolCityCodes = {};
+
+// A designated city includes its wards; a ward or ordinary city matches itself.
+function getSchoolCityCodes(areas, selectedArea) {
+  return areas.filter(function (area) {
+    return area.code === selectedArea.code ||
+      (/市$/.test(selectedArea.label) && /区$/.test(area.label) &&
+       area.label.indexOf(selectedArea.label) === 0);
+  }).map(function (area) { return area.code; });
+}
+
+function resetSchoolSelection() {
+  schoolLoadVersion++;
+  A27Xml = null;
+  $('#gaiku').html('<option value="00" selected>--選択--</option>');
+  deletePoly();
+}
+
 //都道府県名とコードの設定
 function setPref(){
   $.ajax({
     type: "GET",
-    url: "/gakkumap/PrefCd.xml",
+    url: "./PrefCd.xml",
     dataType: "xml",
     success: function(xml){
 			//都道府県名・コードを抽出し、SELECT ボックスに設定
@@ -18,7 +39,7 @@ function setPref(){
 					$('#pref').append(wopt);
 		    });
 		  });
-			$('#pref').bind('change', selectCity);
+			$('#pref').off('change', selectCity).on('change', selectCity);
 		},
     error : function(){
     					errorMsg("都道府県名とコード処理");
@@ -27,11 +48,25 @@ function setPref(){
 }
 //市区町村名とコードの設定
 function setCity(){
+  var requestedPrefCode = prefCode;
+  var loadVersion = ++cityLoadVersion;
   $.ajax({
     type: "GET",
-    url: "/gakkumap/AdminAreaCd.xml",
+    url: "./AdminAreaCd.xml",
     dataType: "xml",
     success: function(xml){
+      if (loadVersion !== cityLoadVersion) return;
+      var areas = [];
+      $(xml).find('codelabel').each(function () {
+        var code = $(this).attr('code');
+        if (code.substr(0, 2) === requestedPrefCode) {
+          areas.push({code: code, label: $(this).attr('label')});
+        }
+      });
+      schoolCityCodes = {};
+      areas.forEach(function (area) {
+        schoolCityCodes[area.code] = getSchoolCityCodes(areas, area);
+      });
 			$("#city").html('');
 			wopt = document.createElement('option');
 			wopt.setAttribute('value', '00');
@@ -41,7 +76,8 @@ function setCity(){
 			//市区町村名・コードを抽出し、SELECT ボックスに設定
 		  $(xml).find('ksjc\\:C002').each(function(){
 		    $(this).find("codelabel").each(function(){
-		    	if (($(this).attr("code")).substr(0,2) == parseInt(prefCode)){
+
+          if ($(this).attr("code").substr(0,2) === requestedPrefCode){
 			    	wopt = document.createElement('option');
 			    	//市区町村コード
 			    	cityCode = $(this).attr("code");	//市区町村コード
@@ -50,66 +86,45 @@ function setCity(){
 			    	cityName = $(this).attr("label");
 						splitCityName(cityName);	//市区町村名を分割
 			    	$(wopt).append(cityNameL);
-						//都道府県の制限
-		    		if (prefCode > "30"){
-		    			wopt.setAttribute("disabled", "disabled");
-		    			//console.log(wopt);
-		    		}
 						$('#city').append(wopt);
 					}
 		    });
 		  });
-			$('#city').bind('change', selectGaiku);
+			$('#city').off('change', selectGaiku).on('change', selectGaiku);
 		},
     error : function(){
+      if (loadVersion !== cityLoadVersion) return;
     					errorMsg("市区町村名とコード処理");
     				}
 	});
 }
 
 //学校の設定
-function setSchool(dir, file){
-	$.ajax({
-    type: "GET",
-    url: "/gakkumap/A27-10_13.xml",
-    dataType: "xml",
-    success:function(xml){
-			A27Xml = xml;	//xml退避
-			$("#gaiku").html('');
-			wopt = document.createElement('option');
-			wopt.setAttribute('value', '00');
-			wopt.setAttribute("selected", "selected");
-			$(wopt).append('--選択--');
-			$("#gaiku").append(wopt);
-			//町・字名・コードを抽出し、SELECT ボックスに設定
-			var val;
-			$(xml).find('ksj\\:OBJ').each(function(){
-					// 通学区域
-					$(this).find("ksj\\:SD02").each(function(){
-							// 市区町村コード
-							$(this).find("ksj\\:CCD").each(function(){
-									if ($(this)[0].textContent == cityCode ) {
-								    	wopt = document.createElement('option');
-										// 学校コード
-										schoolCode = $(this).closest("ksj\\:SD02").children("ksj\\:ARE").attr("idref");
-								    	wopt.setAttribute('value', schoolCode);
-										// 学校名
-										esn = $(this).closest("ksj\\:SD02").children("ksj\\:ESN");
-										shcoolName = esn[0].textContent;
-								    	$(wopt).append(shcoolName);
-										$("#gaiku").append(wopt);
-										console.log(shcoolName);
-									}
-							});
-					});
-
-			});
-
+function setSchool(){
+  var requestedCityCodes = schoolCityCodes[cityCode] || [cityCode];
+  var requestedCityName = cityName;
+  var file = 'A27-23_' + prefCode + '.geojson';
+  var loadVersion = ++schoolLoadVersion;
+  $('#output').text('学校データを読み込み中…');
+  $.ajax({
+    type: 'GET', url: './map_data/' + file, dataType: 'json',
+    success: function(data) {
+      if (loadVersion !== schoolLoadVersion) return;
+      try {
+        $('#output').text('');
+        loadModernSchoolOptions(data, requestedCityCodes, requestedCityName);
+        A27Xml = data;
+      } catch (error) {
+        A27Xml = null;
+        $('#output').text('学校データの形式を確認してください：' + error.message);
+      }
     },
-    error : function(){
-    				  errorMsg("学校の設定処理");
-    				}    
-	});
+    error: function() {
+      if (loadVersion !== schoolLoadVersion) return;
+      A27Xml = null;
+      $('#output').text('学校データ map_data/' + file + ' を読み込めません。ファイルの配置を確認してください。');
+    }
+  });
 }
 
 //町丁・字名とコードの設定
@@ -153,21 +168,19 @@ function selectCity(){
 	//都道府県コード
 	prefCode = $('#pref option:selected').val();
 	prefName = $('#pref option:selected').text();
-	setCity();
+  cityLoadVersion++;
+  cityCode = '00';
+  $('#city').html('<option value="00" selected>--選択--</option>');
+  resetSchoolSelection();
+  if (prefCode !== '00') setCity();
 }
 
 function selectGaiku(){
 	//都道府県+市区町村コード
 	cityCode = $('#city option:selected').val();
 	cityName = $('#city option:selected').text();
-	splitCityCode(cityCode);	//市区町村コードを分割
-	//ディレクトリ：都道府県コード+都道府県名（漢字）
-	//var xmlDir  = cityCodeU + cityNameU + "/";
-	var xmlDir  = cityCodeU + "/";
-	//ファイル名：h22ka + 都道府県 + 市区町村コード
-	var xmlFile = "h22ka"   + cityCode + ".xml";
-	// setGaiku(xmlDir,xmlFile);
-	setSchool(xmlDir, xmlFile);
+	resetSchoolSelection();
+	if (cityCode !== '00') setSchool();
 }
 /*
 function selectCoords(){

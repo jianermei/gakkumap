@@ -3,24 +3,19 @@
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 <title>学区検索マップ</title>
-<link rel="stylesheet" type="text/css" href="/gakkumap/style.css">
-<!--<script type="text/javascript" src="/files/jquery-1.9.0.min.js"></script>-->
-<script
-  src="https://code.jquery.com/jquery-1.10.1.min.js"
-  integrity="sha256-SDf34fFWX/ZnUozXXEH0AeB+Ip3hvRsjLwp6QNTEb3k="
-  crossorigin="anonymous"></script>
-<script type="text/javascript" src="http://www.google.com/jsapi"></script>
-<!--<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>-->
-<script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPVUTcd3IfbTtzVqBzrC4f48_TaaI_26U&callback=initMap">
-    </script>
-<script type="text/javascript" src="/gakkumap/setSelectOpt.js"></script>
-<!--<script type="text/javascript" src="getPrefCoords.js"></script>-->
-<!--<script type="text/javascript" src="getCityCoords.js"></script>-->
-<script type="text/javascript" src="/gakkumap/getSchoolCoords.js"></script>
+<link rel="stylesheet" type="text/css" href="./style.css?v=place-search-1">
+<script src="./config.local.js"></script>
+<script src="./jquery-3.2.1.min.js"></script>
+<script src="./modernSchoolData.js?v=2023-address-1"></script>
+<script src="./setSelectOpt.js?v=2023-1"></script>
+<script src="./walkingRoute.js?v=1"></script>
+<script src="./schoolMarkers.js?v=2023-address-1"></script>
+<script src="./placeSearch.js?v=walking-1"></script>
+<script src="./getSchoolCoords.js?v=2023-1"></script>
 <script>
 
 var map;
+var A27Xml;
 var infoWindow;
 var bounds;
 var adminArea, adminLine;
@@ -37,15 +32,37 @@ var h22kaXml;
 var bdCoords = new Array();
 
 $(document).ready(function(){
-	//initialize();
-	setPref();	//setSelectOpt.js
+	if (window.location.protocol === 'file:') {
+		$('#output').text('ローカルサーバーを起動し、http://localhost:8000/selectTest.html を開いてください（README.md 参照）。');
+		$('form :input').prop('disabled', true);
+		return;
+	}
+	var config = window.GAKKUMAP_CONFIG || {};
+	if (!config.apiKey || config.apiKey === 'YOUR_GOOGLE_MAPS_API_KEY') {
+		$('#output').text('config.example.js を config.local.js にコピーし、Google Maps API キーを設定してください。');
+		return;
+	}
+	setPref();
+	var mapsScript = document.createElement('script');
+	mapsScript.async = true;
+	mapsScript.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(config.apiKey) + '&loading=async&libraries=marker&callback=initMap';
+	mapsScript.onerror = function () {
+		$('#output').text('Google Maps を読み込めませんでした。ネットワーク接続を確認してください。');
+	};
+	document.head.appendChild(mapsScript);
 });
+function gm_authFailure() {
+  map = null;
+  $('#output').text('Google Maps の認証に失敗しました。API キーの許可リファラーを確認してください（README.md 参照）。');
+}
 function initMap() {
   //var myLatLng = new google.maps.LatLng(35.7873194, 140.029875);	//白井市
   //var myLatLng = new google.maps.LatLng(38.38095993790538,140.27592658996582);	//寒河江市
 
   var mapOptions = {
     zoom: 10,
+    // Google-provided map ID for local testing; use your own ID in production.
+    mapId: (window.GAKKUMAP_CONFIG || {}).mapId || 'DEMO_MAP_ID',
     center: {lat: 38.38095993790538, lng: 140.27592658996582},
     draggableCursor : 'default',
     mapTypeId: 'roadmap'
@@ -55,6 +72,11 @@ function initMap() {
       mapOptions);
 }
 function selectProc(){
+	if (!map || !A27Xml || $('#gaiku').val() === '00') {
+		$('#output').text('地図と学校データの読み込み後、学校を選択してください。');
+		return;
+	}
+	$('#output').text('');
 	// if($('#city option:selected').val() == "00"){
 	//	//都道府県界の描画処理
 	//	getPrefCoords();
@@ -71,6 +93,7 @@ function selectProc(){
 
 // リセット処理
 function deletePoly() {
+	clearSchoolMarker();
 	// ポリゴンの削除
 	if (sArea) {
 		var area
@@ -94,6 +117,28 @@ function deletePoly() {
 <h1>学区検索マップ（ALPHA）</h1>
 
 <div id="container">
+
+<form id="place-search" class="place-search">
+<label for="place-query">場所・住所を検索</label>
+<div class="search-controls">
+<input id="place-query" type="search" placeholder="例：吉祥寺駅、武蔵野市吉祥寺南町2-35-9" />
+<button id="place-search-button" type="submit">検索</button>
+<button id="place-clear" type="button">検索ピンを削除</button>
+</div>
+<div id="place-results" hidden>
+<label for="place-result">検索候補</label>
+<select id="place-result"></select>
+</div>
+<p id="search-status" role="status" aria-live="polite"></p>
+<p class="pin-legend">赤いピン：学校 ／ 青いピン：検索した場所</p>
+</form>
+
+<div class="place-search">
+<button id="walking-button" type="button">徒歩ルートを表示（検索した場所 → 学校）</button>
+<button id="walking-clear" type="button">ルートを削除</button>
+<p id="walking-status" role="status" aria-live="polite"></p>
+<p id="walking-notices" style="white-space:pre-line"></p>
+</div>
 
 <div style="width:260px;float:right;padding:0 0 0 10px;">
 <form name="form1">
@@ -128,4 +173,3 @@ function deletePoly() {
 <span id="mode"></span>
 </body>
 </html>
-

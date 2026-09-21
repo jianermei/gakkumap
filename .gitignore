@@ -1,0 +1,14 @@
+# Source datasets and generated map assets stay local.
+/map_data/
+/A27-*
+/KS-META-*
+/config.local.js
+.env
+.env.*
+!.env.example
+.DS_Store
+.vscode/
+.idea/
+*.log
+*.pem
+*.key

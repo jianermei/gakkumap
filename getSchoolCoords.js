@@ -3,6 +3,10 @@
 *************************************************************/
 
 function getSchoolCoords(){
+    if (A27Xml && A27Xml.type === "FeatureCollection") {
+        drawModernSchool();
+        return;
+    }
 	//学校名・コード
 	schoolCode = $('#gaiku option:selected').val();
 	schoolName = $('#gaiku option:selected').text();
@@ -40,6 +44,7 @@ function getSchoolCoords(){
     });
     
     renderGaiku();
+    drawSchoolMarker(schoolCode);
 }
 
 function getGaikuCoords(){
@@ -92,7 +97,7 @@ function renderGaiku(){
 		polyCoords[i] = latlng;
 		bounds.extend(latlng);
 	}
-	GdispPoly(polyCoords,'#FF0000');
+	if (polyCoords.length) GdispPoly(polyCoords,'#FF0000');
 	//map.fitBounds(bounds);
 }
 
