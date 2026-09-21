@@ -56,10 +56,9 @@ function showSearchPlace(index) {
   if (schoolMarker && schoolMarker.position) {
     visibleBounds.extend(schoolMarker.position);
     if (bounds && !bounds.isEmpty()) visibleBounds.union(bounds);
-    map.fitBounds(visibleBounds, 40);
+    fitMapResults(visibleBounds);
   } else {
-    map.setCenter(place.location);
-    map.setZoom(16);
+    centerMapResult(place.location);
   }
 }
 
@@ -96,16 +95,30 @@ async function searchPlace(event) {
       status.textContent = '見つかりませんでした。市区町村名を含めて検索してください。';
       return;
     }
-    var select = document.getElementById('place-result');
+    var list = document.getElementById('place-result');
     searchPlaces.forEach(function (place, index) {
-      var option = document.createElement('option');
-      option.value = index;
-      option.textContent = (place.displayName || '') + ' — ' + (place.formattedAddress || '');
-      select.appendChild(option);
+      var item = document.createElement('li');
+      var candidate = document.createElement('button');
+      candidate.type = 'button';
+      candidate.className = 'place-candidate';
+      var name = document.createElement('strong');
+      name.textContent = place.displayName || place.formattedAddress || '検索結果';
+      var address = document.createElement('span');
+      address.textContent = place.formattedAddress || '';
+      candidate.appendChild(name);
+      candidate.appendChild(address);
+      candidate.addEventListener('click', function () {
+        document.getElementById('place-query').value = place.displayName || place.formattedAddress || query;
+        document.getElementById('place-results').hidden = true;
+        status.textContent = '';
+        showSearchPlace(index);
+        document.getElementById('place-query').focus();
+      });
+      item.appendChild(candidate);
+      list.appendChild(item);
     });
     document.getElementById('place-results').hidden = false;
-    status.textContent = searchPlaces.length + '件の候補。青いピンで表示しています。';
-    showSearchPlace(0);
+    status.textContent = searchPlaces.length + '件の候補から場所を選択してください。';
   } catch (error) {
     if (version !== searchVersion) return;
     console.error('Place search failed:', error);
@@ -120,7 +133,20 @@ async function searchPlace(event) {
 document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('place-search').addEventListener('submit', searchPlace);
   document.getElementById('place-clear').addEventListener('click', clearPlaceSearch);
-  document.getElementById('place-result').addEventListener('change', function () {
-    showSearchPlace(Number(this.value));
+  document.getElementById('place-query').addEventListener('input', function () {
+    // Invalidate in-flight results when the query changes, keeping the chosen pin.
+    searchVersion++;
+    searchPlaces = [];
+    document.getElementById('place-results').hidden = true;
+    document.getElementById('place-result').textContent = '';
+    document.getElementById('search-status').textContent = '';
+    document.getElementById('place-search-button').disabled = false;
+  });
+  document.getElementById('place-search').addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      document.getElementById('place-results').hidden = true;
+      document.getElementById('search-status').textContent = '';
+      document.getElementById('place-query').focus();
+    }
   });
 });

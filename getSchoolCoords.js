@@ -3,7 +3,7 @@
 *************************************************************/
 
 function getSchoolCoords(){
-    if (A27Xml && A27Xml.type === "FeatureCollection") {
+    if (A27Xml && A27Xml.type === "SchoolIndex") {
         drawModernSchool();
         return;
     }
@@ -98,7 +98,7 @@ function renderGaiku(){
 		bounds.extend(latlng);
 	}
 	if (polyCoords.length) GdispPoly(polyCoords,'#FF0000');
-	//map.fitBounds(bounds);
+	//fitMapResults(bounds);
 }
 
 function GdispPoly(polyCoords,fcolor){
@@ -133,7 +133,7 @@ function GdispPoly(polyCoords,fcolor){
 		adminLine.setMap(map);
   	sLine.push(adminLine);
 	}
-	map.fitBounds(bounds);
+	fitMapResults(bounds);
 }
 
 /*
@@ -150,6 +150,6 @@ function renderGaiku(){
 		bounds.extend(latlng);
 		dispPoly(polyCoords,'#FF0000');
 	}
-	map.fitBounds(bounds);
+	fitMapResults(bounds);
 }
 */

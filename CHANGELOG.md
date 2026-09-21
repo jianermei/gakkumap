@@ -1,5 +1,30 @@
 # Change summary
 
+## Beta interface improvements
+
+- Replace the fixed desktop layout with a full-width mobile map, floating search field, and responsive desktop sidebar.
+- Add a collapsible school-selection panel and a mobile handle supporting drag down/up and tap to hide/restore information without losing selections or routes.
+- Show clickable place candidates directly below the input; require an explicit selection, then hide candidates and display the selected blue marker.
+- Invalidate stale search responses when the query changes; support keyboard selection and Escape dismissal.
+- Fit boundaries and routes below the floating search controls; use tighter mobile margins and refit after panel or search-box size changes.
+- Promote walking duration and distance into a prominent result card; move the school-location caveat below it in smaller, muted text.
+- Preserve existing routes and duration results when redrawing the same school boundary; clear them when endpoints change or the user clears them.
+- Unify main action buttons with dark-green backgrounds and white text.
+- Exclude Cloudflare local state and dependency folders from Git.
+
+Validation: JavaScript syntax and deployment-builder checks passed during these changes.
+Mobile gestures and final viewport framing still need device/browser verification.
+
+## Deployment preparation
+
+- Export all 47 prefectures into separate indexes and bounded geometry chunks without simplifying geometry.
+- Load municipality and school indexes independently; fetch geometry only on Draw and reuse a bounded request cache.
+- Verify source-feature preservation, references, stale requests, retries and hosting file limits.
+- Add a static package builder with a public-file allowlist, content-hashed application assets and referenced data only.
+- Generate index.html, config.js and Cloudflare Pages cache/security headers; exclude local configuration and raw datasets.
+- Accept separate production configuration via environment variables or an ignored JSON file, with an optional strict build gate.
+- Building packages does not upload or publish the website.
+
 ## 2026-09-21
 
 - Fixed relative script, stylesheet and data paths; use a local HTTP server instead of file URLs.

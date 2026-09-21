@@ -12,3 +12,13 @@
 *.log
 *.pem
 *.key
+
+/data/
+/dist/
+/config.production.json
+/.gakkumap-build-*/
+__pycache__/
+
+# Local Cloudflare tooling state and dependencies.
+/.wrangler/
+/node_modules/

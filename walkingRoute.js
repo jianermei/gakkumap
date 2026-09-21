@@ -6,6 +6,7 @@ function clearWalkingRoute() {
   walkingPolylines.forEach(function (line) { line.setMap(null); });
   walkingPolylines = [];
   document.getElementById('walking-status').textContent = '';
+  document.getElementById('walking-status').classList.remove('route-result');
   document.getElementById('walking-notices').textContent = '';
   document.getElementById('walking-button').disabled = false;
 }
@@ -21,7 +22,7 @@ async function drawWalkingRoute() {
   clearWalkingRoute();
   var status = document.getElementById('walking-status');
   if (!map || !searchMarker || !schoolMarker) {
-    status.textContent = '場所を検索し、学校を選択して「描画」を押してから徒歩ルートを表示してください。';
+    status.textContent = '場所を検索し、学校を選択して「学区を表示」を押してから徒歩ルートを表示してください。';
     return;
   }
   var version = walkingRouteVersion;
@@ -55,12 +56,32 @@ async function drawWalkingRoute() {
     routeBounds.extend(origin);
     routeBounds.extend(destination);
     route.path.forEach(function (point) { routeBounds.extend(point); });
-    map.fitBounds(routeBounds, 40);
-    var distance = typeof route.distanceMeters === 'number'
-      ? ' ／ ' + (route.distanceMeters >= 1000
+    fitMapResults(routeBounds);
+    var distance = typeof route.distanceMeters === 'number' && isFinite(route.distanceMeters)
+      ? (route.distanceMeters >= 1000
         ? (route.distanceMeters / 1000).toFixed(1) + ' km' : Math.round(route.distanceMeters) + ' m') : '';
-    status.textContent = '検索した場所 → 学校：徒歩 約' + Math.ceil(route.durationMillis / 60000) +
-      '分' + distance + '（取得できた候補の中で所要時間が最短）';
+    status.textContent = '';
+    status.classList.add('route-result');
+    var label = document.createElement('span');
+    label.className = 'route-label';
+    label.textContent = '検索した場所 → 学校';
+    var metrics = document.createElement('span');
+    metrics.className = 'route-metrics';
+    var duration = document.createElement('strong');
+    duration.textContent = '徒歩 約' + Math.ceil(route.durationMillis / 60000) + '分';
+    metrics.appendChild(duration);
+    if (distance) {
+      var distanceLabel = document.createElement('span');
+      distanceLabel.className = 'route-distance';
+      distanceLabel.textContent = distance;
+      metrics.appendChild(distanceLabel);
+    }
+    var detail = document.createElement('span');
+    detail.className = 'route-detail';
+    detail.textContent = '取得できた候補の中で所要時間が最短';
+    status.appendChild(label);
+    status.appendChild(metrics);
+    status.appendChild(detail);
     document.getElementById('walking-notices').textContent =
       (route.warnings || []).join('\n');
   } catch (error) {

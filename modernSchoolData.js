@@ -1,37 +1,8 @@
 // A27-23 GeoJSON: coordinates are [longitude, latitude].
 var modernSchools = Object.create(null);
-function loadModernSchoolOptions(data, cityCodes, selectedCityName) {
-  if (!data || data.type !== 'FeatureCollection' || !Array.isArray(data.features)) {
-    throw new Error('学校データは GeoJSON FeatureCollection である必要があります。');
-  }
-  modernSchools = Object.create(null);
-  var select = document.getElementById('gaiku');
-  select.textContent = '';
-  var placeholder = document.createElement('option');
-  placeholder.value = '00'; placeholder.textContent = '--選択--'; select.appendChild(placeholder);
-  data.features.forEach(function (feature, index) {
-    var p = feature.properties || {};
-    var codeMatches = cityCodes.indexOf(String(p.A27_001).padStart(5, '0')) !== -1;
-    // 2023 data uses parent city codes; identify individual wards by school address.
-    var wardMatches = selectedCityName && /市.+区$/.test(selectedCityName) &&
-      String(p.A27_005 || '').indexOf(selectedCityName) === 0;
-    if (!codeMatches && !wardMatches) return;
-    var key = JSON.stringify([p.A27_001, p.A27_003 || p.A27_004, p.A27_005]);
-    if (!modernSchools[key]) {
-      modernSchools[key] = {name: p.A27_004 || '名称不明', address: p.A27_005 || '', features: []};
-      var option = document.createElement('option');
-      option.value = key; option.textContent = modernSchools[key].name; select.appendChild(option);
-    }
-    modernSchools[key].features.push(feature);
-  });
-  if (!Object.keys(modernSchools).length) {
-    $('#output').text('この市区町村の学校区はデータに含まれていません。');
-  }
-}
-function drawModernSchool() {
-  deletePoly();
-  var school = modernSchools[$('#gaiku').val()];
-  if (!school) return;
+function drawModernSchool() { return loadSelectedBoundary(); }
+
+function renderModernSchool(school) {
   bounds = new google.maps.LatLngBounds();
   sArea = []; sLine = [];
   var polygonMode = $('input[name=ptype]:checked').val() === '1';
@@ -59,6 +30,16 @@ function drawModernSchool() {
       }
     });
   });
-  if (!bounds.isEmpty()) map.fitBounds(bounds);
-  geocodeSchoolAddress(school, prefName);
+  // Selection changes already remove the old marker and invalidate its route.
+  // Reuse the current endpoint when only redrawing the same school boundary.
+  if (schoolMarker && schoolMarker.position) bounds.extend(schoolMarker.position);
+  walkingPolylines.forEach(function (line) {
+    line.getPath().forEach(function (point) { bounds.extend(point); });
+  });
+  if (!bounds.isEmpty()) fitMapResults(bounds);
+  if (schoolMarker) {
+    $('#output').text('');
+  } else {
+    geocodeSchoolAddress(school, prefName);
+  }
 }

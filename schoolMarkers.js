@@ -59,6 +59,7 @@ function buildSchoolLocations(xml) {
 }
 
 function clearSchoolMarker() {
+  document.getElementById('school-location-note').textContent = '';
   schoolGeocodeVersion++;
   clearWalkingRoute();
   if (schoolMarker) {
@@ -106,10 +107,9 @@ function renderSchoolMarker(school) {
   var hasBoundary = bounds && !bounds.isEmpty();
   bounds.extend(school.position);
   if (hasBoundary) {
-    map.fitBounds(bounds);
+    fitMapResults(bounds);
   } else {
-    map.setCenter(school.position);
-    map.setZoom(16);
+    centerMapResult(school.position);
   }
 }
 
@@ -141,6 +141,7 @@ function geocodeSchoolAddress(school, prefecture) {
         return;
       }
       renderSchoolMarker({name: school.name, address: address, position: matches[0].geometry.location});
-      $('#output').text('学校ピンは所在地の住所から求めた位置です。学校の入口を示すとは限りません。');
+      $('#output').text('');
+      document.getElementById('school-location-note').textContent = '学校ピンは所在地の住所から求めた位置です。学校の入口を示すとは限りません。';
     });
 }

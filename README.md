@@ -6,7 +6,7 @@
 ## ローカルで起動
 
 1. `config.example.js` を `config.local.js` にコピーし、自分の Google Maps API キーを設定します。
-2. 学区データを `map_data` フォルダーに配置します（下記参照）。
+2. 学区データを `map_data` フォルダーに配置し、下記のエクスポーターを実行します。
 3. プロジェクトのフォルダーで Python 3 の HTTP サーバーを起動します。
 
 ```sh
@@ -39,7 +39,7 @@ Google Cloud のウェブサイト制限・API 制限を必ず設定してくだ
 
 ## 学校データ
 
-現在のローダーは2023年度版の `map_data/A27-23_XX.geojson` を使用します。
+エクスポーターは2023年度版の `map_data/A27-23_XX.geojson` を入力に使用します。ブラウザーは生成済みの `data/2023/` のみ読み込みます。
 `XX` は `PrefCd.xml` の2桁の都道府県コード（01〜47）です。
 
 - 北海道：`map_data/A27-23_01.geojson`
@@ -80,3 +80,108 @@ Google の利用条件・プライバシー表示・出典表示、モバイル�
 - [Google Places Text Search](https://developers.google.com/maps/documentation/javascript/place-search)
 - [Google Routes](https://developers.google.com/maps/documentation/javascript/routes/get-a-route)
 - [参考にした行政区域描画の実装](http://memopad.bitter.jp/web/GoogleMap/V3/myMap/place/index.html)
+
+## Web 配信用データの生成と遅延読み込み
+
+Python 3（追加パッケージ不要）で実行します。
+
+```sh
+python3 scripts/export_map_data.py
+python3 scripts/verify_map_export.py
+```
+
+初期値は全47都道府県、出力先は `data/2023/` です。一部だけを出力する場合：
+
+```sh
+python3 scripts/export_map_data.py --prefectures 13,14
+```
+
+全都道府県の元ファイルを揃えるか、用意した都道府県を明示してください。
+ブラウザーの都道府県一覧にはエクスポートしたものだけを表示します。
+`--source` と `--output` で入力・出力先を変更できますが、アプリは標準の
+`data/2023/` を参照します。`--chunk-bytes` は境界チャンクの目標サイズ（既定1 MiB）です。
+同じ学校の複数の境界は分離せず、1校が目標を超える場合はそのまま1チャンクにします。
+25 MiB を超えるファイルは出力エラーにします。
+
+- ページ起動時：小さい manifest を読み込みます。
+- 都道府県選択時：市区町村一覧を読み込みます。
+- 市区町村選択時：学校名・住所・境界ファイル参照のみを読み込みます。
+- 「描画」時：選択した学校を含む境界チャンクだけを読み込みます。
+- 成功したファイル取得は最大12件をメモリーに保持し、失敗した取得は再試行可能です。
+
+座標の丸め・境界の簡略化は行いません。検証スクリプトは全元フィーチャーの一致
+（穴・離島などを含む）、学校リストの参照、ファイルサイズ・件数を確認します。
+従来のコード表にない自治体コードも数値コードとして選択できるようにします。
+住所による区の分類は元データの住所表記に依存します。
+
+ファイル名には内容のハッシュを付け、manifest は最後に更新します。
+再出力時は旧ファイルを削除しません。リリース用には空の出力先で生成し、
+検証した出力全体を配置してください（旧ハッシュファイルを含めた配信件数に注意）。
+この工程はデータ生成のみで、サイトを公開・アップロードするものではありません。
+`map_data/`、`data/`、`dist/` は Git 対象外です。
+
+ローカルの回帰チェック：
+
+```sh
+python3 -m unittest discover -s tests -p 'test_*.py'
+node tests/lazySchoolData.test.js
+```
+
+## 静的ホスティング用パッケージ
+
+データ生成・検証後、次のコマンドで `dist/` を作成します。この操作はローカルのみで、
+サイトの公開や GitHub へのアップロードは行いません。
+
+```sh
+python3 scripts/build_deployment.py
+```
+
+初期状態は API キーを含まないプレースホルダー設定です。ページは開けますが、
+Google Maps の機能を使うには公開用設定を指定して再ビルドしてください。
+このスクリプトは `config.local.js` を読み取ったりコピーしたりしません。
+
+### 公開用設定
+
+`config.production.example.json` を `config.production.json` にコピーし、エディターで
+本番用の制限付きブラウザー API キーと、自分の Google Maps マップ ID を設定します。
+`config.production.json` は Git 対象外です。既存ファイルは上書きしないでください。
+
+```sh
+python3 scripts/build_deployment.py --config config.production.json --require-config
+```
+
+JSON ファイルの代わりに、ビルド環境の `GAKKUMAP_API_KEY` と `GAKKUMAP_MAP_ID` を使用することもできます。
+`--require-config` は未設定キー・サンプル設定・デモ map ID を拒否します。
+実際のキーの有効性、API 有効化、ドメイン制限、課金設定は Google Cloud 側で別途確認が必要です。
+設定値をビルドログには出力しませんが、配信される `dist/config.js` にはブラウザー用キーが含まれます。
+ブラウザー用キーは訪問者から見えるため、公開ドメインと必要な API への制限が必要です。
+秘密のサーバーキーや認証情報をこの設定に入れないでください。
+
+### パッケージの内容と検証
+
+- `index.html`：サイトの入口（開発用の `selectTest.html` から生成）
+- `assets/`：内容ハッシュ付きの JavaScript と CSS
+- `config.js`：公開用ブラウザー設定（未指定の場合はプレースホルダー）
+- `data/2023/`：manifest から参照される索引と境界チャンクのみ
+- `_headers`：Cloudflare Pages 用のキャッシュ・セキュリティ設定
+- `.gakkumap-build.json`：キーを含まないビルド結果・設定有無の記録
+
+元の `map_data/`、使われていない古いデータチャンク、ローカル設定、Git、テスト、
+エディター設定などは同梱しません。元データの出典・利用条件に関する公開ページは別途準備してください。
+ビルド時に HTML のファイル参照、データ参照、25 MiB の単一ファイル上限、20,000 ファイル上限、
+アプリ資産内のキー・個人パス混入をチェックします。
+このビルダーが生成した `dist/` は再実行時に置き換わるため、中を手作業で編集しないでください。
+元データの完全一致検証は `scripts/verify_map_export.py` を使用してください。
+
+ローカルでパッケージだけを確認するには：
+
+```sh
+python3 -m http.server 8001 --bind 127.0.0.1 --directory dist
+```
+
+http://localhost:8001/ を開きます。地図も試す場合は、テスト用の制限付きキーでパッケージを作り、
+そのキーにテスト URL を許可してください。本番キーの制限をテスト用に広げる必要はありません。
+本番向けビルドに戻してから配置します。
+
+最終公開時は `dist/` の内容だけをアップロードします。設定入りビルドの成功は、
+プライバシーポリシー・利用条件・データ利用許諾など公開準備の完了を意味しません。
