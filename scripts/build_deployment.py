@@ -79,6 +79,7 @@ def build(output, data, config, require_config=False, junior_data=None):
     output.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix='.gakkumap-build-', dir=output.parent))
     try:
+        shutil.copyfile(ROOT / 'favicon.svg', staging / 'favicon.svg')
         html = (ROOT / 'selectTest.html').read_text(encoding='utf-8')
         for name in ASSETS:
             raw = (ROOT / name).read_bytes()

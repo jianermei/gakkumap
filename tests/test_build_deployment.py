@@ -32,6 +32,9 @@ class BuildTests(unittest.TestCase):
             self.assertIn('./index.html', about)
             self.assertIn('./assets/style-', about)
             self.assertIn('2023年度', about)
+            self.assertEqual((out / 'favicon.svg').read_bytes(), (ROOT / 'favicon.svg').read_bytes())
+            for page in ('index.html', 'about.html', 'privacy.html'):
+                self.assertIn('href="./favicon.svg"', (out / page).read_text())
             privacy = (out / 'privacy.html').read_text()
             self.assertIn('./index.html', privacy)
             self.assertIn('./assets/style-', privacy)
