@@ -25,6 +25,8 @@ async function drawWalkingRoute() {
     status.textContent = '場所を検索し、学校を選択して「学区を表示」を押してから徒歩ルートを表示してください。';
     return;
   }
+  trackUsage('walking_route_requested');
+  var started = Date.now();
   var version = walkingRouteVersion;
   var origin = searchMarker.position;
   var destination = schoolMarker.position;
@@ -45,9 +47,11 @@ async function drawWalkingRoute() {
     if (version !== walkingRouteVersion) return;
     var route = fastestWalkingRoute(response.routes || []);
     if (!route) {
+      trackUsage('walking_route_failed');
       status.textContent = 'この2地点を結ぶ徒歩ルートが見つかりませんでした。';
       return;
     }
+    trackUsage('walking_route_succeeded', {duration_ms: Date.now() - started});
     walkingPolylines = route.createPolylines({polylineOptions: {
       strokeColor: '#1769d2', strokeOpacity: 0.9, strokeWeight: 5, zIndex: 10
     }});
@@ -86,6 +90,7 @@ async function drawWalkingRoute() {
       (route.warnings || []).join('\n');
   } catch (error) {
     if (version !== walkingRouteVersion) return;
+    trackUsage('walking_route_failed');
     console.error('Walking route failed:', error);
     status.textContent = /PERMISSION_DENIED|REQUEST_DENIED/.test(String(error))
       ? 'ルート検索が許可されていません。Google Cloud の Routes API と API キーの制限を確認してください（README 参照）。'

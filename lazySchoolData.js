@@ -85,6 +85,8 @@ async function loadSchoolIndex() {
 }
 
 async function loadSelectedBoundary() {
+  var started = Date.now();
+  trackUsage('boundary_requested');
   clearSchoolBoundary();
   var version = boundaryLoadVersion;
   var school = modernSchools[$('#gaiku').val()];
@@ -95,8 +97,10 @@ async function loadSelectedBoundary() {
     if (version !== boundaryLoadVersion) return;
     var features = data.schools[school.id];
     if (!Array.isArray(features)) throw new Error('School geometry missing');
+    trackUsage('boundary_displayed', {duration_ms: Date.now() - started});
     renderModernSchool({name: school.name, address: school.address, features: features});
   } catch (error) {
+    if (version === boundaryLoadVersion) trackUsage('boundary_failed');
     if (version === boundaryLoadVersion) $('#output').text('学区を読み込めません。「描画」で再試行してください。');
   }
 }
@@ -110,6 +114,7 @@ async function switchSchoolType(type) {
   schoolTypeSelections[activeSchoolType] = previous;
   var desired = schoolTypeSelections[type] || previous;
   activeSchoolType = type;
+  trackUsage('school_type_changed');
   var version = ++schoolTypeVersion;
   ['pref', 'city', 'gaiku', 'draw-school'].forEach(function (id) { document.getElementById(id).disabled = true; });
   try {

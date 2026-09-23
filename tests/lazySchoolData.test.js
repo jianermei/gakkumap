@@ -3,7 +3,7 @@ const fs = require('fs'), vm = require('vm'), assert = require('assert');
 let requests = [], selected = 'school', rendered, messages = [];
 let respond = path => Promise.resolve({ok: true, json: () => Promise.resolve({schools: {school: []}})});
 const ctx = {
-  Map, console, document: {addEventListener: () => {}}, modernSchools: {school: {id: 'school', name: 'School', address: 'Address', boundary: 'chunk.json'}},
+  trackUsage: () => {}, Map, console, document: {addEventListener: () => {}}, modernSchools: {school: {id: 'school', name: 'School', address: 'Address', boundary: 'chunk.json'}},
   fetch: url => { requests.push(url); return respond(url); },
   $: () => ({val: () => selected, text: s => messages.push(s)}),
   renderModernSchool: school => { rendered = school; },

@@ -74,6 +74,8 @@ async function searchPlace(event) {
     status.textContent = '地図の読み込み後に検索してください。';
     return;
   }
+  trackUsage('place_search_submitted');
+  var started = Date.now();
   clearPlaceSearch();
   var version = searchVersion;
   var button = document.getElementById('place-search-button');
@@ -91,6 +93,7 @@ async function searchPlace(event) {
     });
     if (version !== searchVersion) return;
     searchPlaces = (response.places || []).filter(function (place) { return !!place.location; });
+    trackUsage('place_candidates_returned', {result_count: searchPlaces.length, duration_ms: Date.now() - started});
     if (!searchPlaces.length) {
       status.textContent = '見つかりませんでした。市区町村名を含めて検索してください。';
       return;
@@ -111,6 +114,7 @@ async function searchPlace(event) {
         document.getElementById('place-query').value = place.displayName || place.formattedAddress || query;
         document.getElementById('place-results').hidden = true;
         status.textContent = '';
+        trackUsage('place_candidate_selected');
         showSearchPlace(index);
         document.getElementById('place-query').focus();
       });
@@ -121,6 +125,7 @@ async function searchPlace(event) {
     status.textContent = searchPlaces.length + '件の候補から場所を選択してください。';
   } catch (error) {
     if (version !== searchVersion) return;
+    trackUsage('place_search_failed');
     console.error('Place search failed:', error);
     status.textContent = /PERMISSION_DENIED|REQUEST_DENIED/.test(String(error))
       ? '検索が許可されていません。Google Cloud で Places API (New) を有効にし、API キーの制限を確認してください（README 参照）。'

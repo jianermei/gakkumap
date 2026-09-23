@@ -12,7 +12,7 @@ import tempfile
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-ASSETS = ('style.css', 'jquery-3.2.1.min.js', 'lazySchoolData.js', 'modernSchoolData.js',
+ASSETS = ('analytics.js', 'style.css', 'jquery-3.2.1.min.js', 'lazySchoolData.js', 'modernSchoolData.js',
           'setSelectOpt.js', 'walkingRoute.js', 'schoolMarkers.js', 'placeSearch.js', 'getSchoolCoords.js')
 MARKER = '.gakkumap-build.json'
 

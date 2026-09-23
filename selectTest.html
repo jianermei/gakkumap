@@ -6,6 +6,7 @@
 <title>学区検索マップ</title>
 <link rel="stylesheet" type="text/css" href="./style.css?v=candidates-2">
 <script src="./config.local.js"></script>
+<script src="./analytics.js"></script>
 <script src="./jquery-3.2.1.min.js"></script>
 <script src="./lazySchoolData.js?v=1"></script>
 <script src="./modernSchoolData.js?v=lazy-1"></script>
@@ -206,7 +207,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var gesture = null;
   var suppressClick = false;
   function setSheetCollapsed(value) {
+    var wasCollapsed = collapsed;
     collapsed = mobile.matches && value;
+    if (wasCollapsed !== collapsed) trackUsage('sheet_toggled', {action: collapsed ? 'collapse' : 'expand'});
     content.hidden = collapsed;
     panel.style.height = '';
     panel.classList.toggle('sheet-collapsed', collapsed);
