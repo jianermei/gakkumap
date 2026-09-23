@@ -87,14 +87,14 @@ function renderSchoolMarker(school) {
   schoolMarker = new google.maps.marker.AdvancedMarkerElement({
     map: map,
     position: school.position,
-    title: school.name,
+    title: (activeSchoolType === 'junior-high' ? '中学校：' : '小学校：') + school.name,
     gmpClickable: true
   });
   var marker = schoolMarker;
   marker.addEventListener('gmp-click', function () {
     var content = document.createElement('div');
     var title = document.createElement('strong');
-    title.textContent = school.name;
+    title.textContent = (activeSchoolType === 'junior-high' ? '中学校：' : '小学校：') + school.name;
     var address = document.createElement('div');
     address.textContent = school.address;
     content.appendChild(title);

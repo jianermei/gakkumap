@@ -39,7 +39,7 @@ Google Cloud のウェブサイト制限・API 制限を必ず設定してくだ
 
 ## 学校データ
 
-エクスポーターは2023年度版の `map_data/A27-23_XX.geojson` を入力に使用します。ブラウザーは生成済みの `data/2023/` のみ読み込みます。
+エクスポーターは2023年度版の `map_data/A27-23_XX.geojson` を入力に使用します。ブラウザーは生成済みの `data/elementary/2023/` のみ読み込みます。
 `XX` は `PrefCd.xml` の2桁の都道府県コード（01〜47）です。
 
 - 北海道：`map_data/A27-23_01.geojson`
@@ -90,7 +90,7 @@ python3 scripts/export_map_data.py
 python3 scripts/verify_map_export.py
 ```
 
-初期値は全47都道府県、出力先は `data/2023/` です。一部だけを出力する場合：
+初期値は全47都道府県、出力先は `data/elementary/2023/` です。一部だけを出力する場合：
 
 ```sh
 python3 scripts/export_map_data.py --prefectures 13,14
@@ -99,7 +99,7 @@ python3 scripts/export_map_data.py --prefectures 13,14
 全都道府県の元ファイルを揃えるか、用意した都道府県を明示してください。
 ブラウザーの都道府県一覧にはエクスポートしたものだけを表示します。
 `--source` と `--output` で入力・出力先を変更できますが、アプリは標準の
-`data/2023/` を参照します。`--chunk-bytes` は境界チャンクの目標サイズ（既定1 MiB）です。
+`data/elementary/2023/` を参照します。`--chunk-bytes` は境界チャンクの目標サイズ（既定1 MiB）です。
 同じ学校の複数の境界は分離せず、1校が目標を超える場合はそのまま1チャンクにします。
 25 MiB を超えるファイルは出力エラーにします。
 
@@ -162,7 +162,7 @@ JSON ファイルの代わりに、ビルド環境の `GAKKUMAP_API_KEY` と `GA
 - `index.html`：サイトの入口（開発用の `selectTest.html` から生成）
 - `assets/`：内容ハッシュ付きの JavaScript と CSS
 - `config.js`：公開用ブラウザー設定（未指定の場合はプレースホルダー）
-- `data/2023/`：manifest から参照される索引と境界チャンクのみ
+- `data/elementary/2023/`：manifest から参照される索引と境界チャンクのみ
 - `_headers`：Cloudflare Pages 用のキャッシュ・セキュリティ設定
 - `.gakkumap-build.json`：キーを含まないビルド結果・設定有無の記録
 
@@ -185,3 +185,25 @@ http://localhost:8001/ を開きます。地図も試す場合は、テスト用
 
 最終公開時は `dist/` の内容だけをアップロードします。設定入りビルドの成功は、
 プライバシーポリシー・利用条件・データ利用許諾など公開準備の完了を意味しません。
+
+## Junior-high data preparation (2023)
+
+The exporter supports A32 junior-high GeoJSON in addition to A27 elementary data.
+Original A32 XML and metadata are retained locally; conversion uses the provided GeoJSON.
+
+```bash
+python3 scripts/export_map_data.py --school-type junior-high
+python3 scripts/verify_map_export.py --source map_data/junior_high_school --output data/junior-high/2023
+```
+
+Default input: `map_data/junior_high_school/A32-23_XX.geojson` (01–47).
+Default output: `data/junior-high/2023/`. The manifest identifies `schoolType: junior-high`,
+`dataset: A32` and year 2023. It references municipality indexes, school lists (name,
+address and boundary reference), and content-hashed boundary chunks. Geometry and original
+properties are preserved, including holes and multipart boundaries. No coordinates are
+invented for school entrances; these records retain school addresses.
+
+Elementary defaults remain unchanged. The exporter refuses to overwrite a manifest
+for the other school type. Raw and generated data remain Git-ignored. The 小学校 / 中学校 switch loads one dataset at a time and retains the searched place.
+The deployment builder includes both datasets; `--junior-data` overrides the junior-high input directory.
+Selections are remembered per school type for the current session. Switching clears the previous school and route.

@@ -61,7 +61,7 @@ class References(HTMLParser):
                     self.paths.append(url.path)
 
 
-def build(output, data, config, require_config=False):
+def build(output, data, config, require_config=False, junior_data=None):
     output = output.resolve()
     # Restrict replacement to this script's disposable build directory.
     if output == ROOT or output in ROOT.parents or output == data.resolve():
@@ -75,6 +75,7 @@ def build(output, data, config, require_config=False):
     if require_config and not configured:
         raise ValueError('Production API key and non-demo map ID are required')
     files = data_files(data)
+    junior_files = data_files(junior_data) if junior_data else set()
     output.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix='.gakkumap-build-', dir=output.parent))
     try:
@@ -100,9 +101,13 @@ def build(output, data, config, require_config=False):
             'apiKey': key or 'YOUR_GOOGLE_MAPS_API_KEY', 'mapId': map_id or 'DEMO_MAP_ID'
         }, ensure_ascii=True) + ';\n', encoding='utf-8')
         for name in sorted(files):
-            target = staging / 'data/2023' / name
+            target = staging / 'data/elementary/2023' / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source_file(data, name), target)
+        for name in sorted(junior_files):
+            target = staging / 'data/junior-high/2023' / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source_file(junior_data, name), target)
         (staging / '_headers').write_text('''/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
@@ -113,7 +118,7 @@ def build(output, data, config, require_config=False):
   Cache-Control: no-cache
 /config.js
   Cache-Control: no-store
-/data/2023/manifest.json
+/data/*/2023/manifest.json
   Cache-Control: no-cache
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
@@ -133,7 +138,7 @@ def build(output, data, config, require_config=False):
             if re.search(r'AIza[\w-]{30,}|-----BEGIN .*PRIVATE KEY-----|/Users/|config\.local\.js', text):
                 raise ValueError('Local setting or credential found in application asset: ' + p.name)
         report = {'generator': 'gakkumap-build-v1', 'configured': configured,
-                  'dataFiles': len(files), 'files': len(generated)+1,
+                  'dataFiles': len(files) + len(junior_files), 'files': len(generated)+1,
                   'totalBytes': sum(p.stat().st_size for p in generated),
                   'largestFileBytes': max(p.stat().st_size for p in generated)}
         (staging / MARKER).write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
@@ -148,14 +153,15 @@ def build(output, data, config, require_config=False):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output', type=Path, default=ROOT / 'dist')
-    p.add_argument('--data', type=Path, default=ROOT / 'data/2023')
+    p.add_argument('--data', type=Path, default=ROOT / 'data/elementary/2023')
+    p.add_argument('--junior-data', type=Path, default=ROOT / 'data/junior-high/2023')
     p.add_argument('--config', type=Path, help='Private JSON file with apiKey and mapId (never printed)')
     p.add_argument('--require-config', action='store_true', help='Fail rather than generate placeholder configuration')
     args = p.parse_args()
     config = json.loads(args.config.read_text()) if args.config else {
         'apiKey': os.environ.get('GAKKUMAP_API_KEY', ''), 'mapId': os.environ.get('GAKKUMAP_MAP_ID', '')}
     try:
-        result = build(args.output, args.data, config, args.require_config)
+        result = build(args.output, args.data, config, args.require_config, args.junior_data)
         print(json.dumps(result, indent=2))
         if not result['configured']:
             print('Package built with placeholder/demo settings. Supply production configuration before publishing.')

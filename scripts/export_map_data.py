@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export A27 GeoJSON without simplifying or changing geometry. Python 3, stdlib only."""
+"""Export A27 elementary or A32 junior-high GeoJSON without simplifying or changing geometry. Python 3, stdlib only."""
 import argparse
 import hashlib
 import json
@@ -11,7 +11,16 @@ def encode(value):
     return json.dumps(value, ensure_ascii=False, separators=(',', ':'), allow_nan=False).encode('utf-8')
 
 
-def export(source, output, codes, chunk_bytes, root):
+def export(source, output, codes, chunk_bytes, root, school_type='elementary'):
+    dataset = {'elementary': 'A27', 'junior-high': 'A32'}[school_type]
+    existing = output / 'manifest.json'
+    if existing.exists():
+        previous = json.loads(existing.read_text())
+        if previous.get('schoolType', 'elementary') != school_type:
+            raise ValueError('Output contains a different school type; choose a separate directory')
+    for code in codes:
+        if not (source / (dataset + '-23_' + code + '.geojson')).is_file():
+            raise ValueError('Missing source GeoJSON for prefecture ' + code)
     areas = [dict(e.attrib) for e in ET.parse(root / 'AdminAreaCd.xml').iter('codelabel')]
     prefs = [dict(e.attrib) for e in ET.parse(root / 'PrefCd.xml').iter('codelabel')]
     output.mkdir(parents=True, exist_ok=True)
@@ -28,30 +37,30 @@ def export(source, output, codes, chunk_bytes, root):
         sizes[name] = len(raw)
         return name
 
-    manifest = {'schemaVersion': 1, 'year': 2023, 'prefectures': []}
+    manifest = {'schemaVersion': 1, 'year': 2023, 'schoolType': school_type, 'dataset': dataset, 'prefectures': []}
     feature_count = school_count = 0
     for pref in prefs:
         code = pref['code']
         if code not in codes:
             continue
-        path = source / ('A27-23_' + code + '.geojson')
+        path = source / (dataset + '-23_' + code + '.geojson')
         data = json.loads(path.read_text(encoding='utf-8-sig'))
         if data.get('type') != 'FeatureCollection':
             raise ValueError('Not a FeatureCollection: ' + str(path))
         groups = {}
         for f in data['features']:
             p = f.get('properties') or {}
-            city = str(p.get('A27_001', '')).zfill(5)
+            city = str(p.get(dataset + '_001', '')).zfill(5)
             if not city.startswith(code):
                 raise ValueError('Unexpected prefecture code: ' + city)
             g = f.get('geometry')
             if not g or g.get('type') not in ('Polygon', 'MultiPolygon'):
                 raise ValueError('Unsupported/missing geometry in ' + str(path))
-            identity = [city, p.get('A27_003') or p.get('A27_004'), p.get('A27_005')]
+            identity = [city, p.get(dataset + '_003') or p.get(dataset + '_004'), p.get(dataset + '_005')]
             key = hashlib.sha256(encode(identity)).hexdigest()
             if key not in groups:
-                groups[key] = {'id': key, 'cityCode': city, 'name': p.get('A27_004') or '名称不明',
-                               'address': p.get('A27_005') or '', 'features': []}
+                groups[key] = {'id': key, 'cityCode': city, 'name': p.get(dataset + '_004') or '名称不明',
+                               'address': p.get(dataset + '_005') or '', 'features': []}
             groups[key]['features'].append(f)
         by_city = {}
         for school in groups.values():
@@ -104,12 +113,15 @@ def export(source, output, codes, chunk_bytes, root):
 if __name__ == '__main__':
     root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--source', type=Path, default=root / 'map_data')
-    parser.add_argument('--output', type=Path, default=root / 'data' / '2023')
+    parser.add_argument('--school-type', choices=['elementary', 'junior-high'], default='elementary')
+    parser.add_argument('--source', type=Path)
+    parser.add_argument('--output', type=Path)
     parser.add_argument('--prefectures', default=','.join('%02d' % i for i in range(1,48)))
     parser.add_argument('--chunk-bytes', type=int, default=1024*1024)
     args = parser.parse_args()
     if args.chunk_bytes < 1: parser.error('--chunk-bytes must be positive')
     codes = args.prefectures.split(',')
     if any(c not in ['%02d' % i for i in range(1,48)] for c in codes): parser.error('Use two-digit prefecture codes')
-    export(args.source, args.output, codes, args.chunk_bytes, root)
+    source = args.source or (root / 'map_data' / 'junior_high_school' if args.school_type == 'junior-high' else root / 'map_data')
+    output = args.output or (root / 'data' / 'junior-high' / '2023' if args.school_type == 'junior-high' else root / 'data' / 'elementary' / '2023')
+    export(source, output, codes, args.chunk_bytes, root, args.school_type)

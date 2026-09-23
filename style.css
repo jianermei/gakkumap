@@ -94,3 +94,7 @@ input[type=radio] { accent-color: #216653; width: 18px; height: 18px; }
 .about-important { padding: 16px; background: #edf6f0; border-left: 4px solid #216653; font-weight: 600; }
 .about-content footer { border-top: 1px solid #d7e1da; margin-top: 28px; padding-top: 16px; color: #64736b; font-size: 12px; }
 @media (max-width: 480px) { .about-content { margin: 12px; padding: 18px; } .about-link { font-size: 11px; } }
+
+.school-type-switch { display: flex; gap: 4px; background: #edf4f0; padding: 4px; border-radius: 14px; margin-bottom: 16px; }
+.school-type-switch button { flex: 1; }
+.school-type-switch button[aria-pressed="false"] { background: transparent; color: #245a49; }

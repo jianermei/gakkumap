@@ -3,10 +3,11 @@ const fs = require('fs'), vm = require('vm'), assert = require('assert');
 let requests = [], selected = 'school', rendered, messages = [];
 let respond = path => Promise.resolve({ok: true, json: () => Promise.resolve({schools: {school: []}})});
 const ctx = {
-  Map, console, modernSchools: {school: {id: 'school', name: 'School', address: 'Address', boundary: 'chunk.json'}},
+  Map, console, document: {addEventListener: () => {}}, modernSchools: {school: {id: 'school', name: 'School', address: 'Address', boundary: 'chunk.json'}},
   fetch: url => { requests.push(url); return respond(url); },
   $: () => ({val: () => selected, text: s => messages.push(s)}),
   renderModernSchool: school => { rendered = school; },
+  clearSchoolBoundary: () => { ctx.boundaryLoadVersion++; },
   deletePoly: () => { ctx.boundaryLoadVersion++; }
 };
 vm.createContext(ctx);
@@ -30,5 +31,9 @@ vm.runInContext(fs.readFileSync('lazySchoolData.js', 'utf8'), ctx);
   await ctx.loadSelectedBoundary(); assert(rendered, 'Failed downloads must be retryable');
   for (let i=0;i<20;i++) await ctx.loadMapAsset('chunk-'+i+'.json');
   assert(ctx.dataCache.size <= 12, 'Bounded memory cache');
+  ctx.dataCache.clear(); requests = [];
+  ctx.dataRoot = './data/elementary/2023/'; await ctx.loadMapAsset('same.json');
+  ctx.dataRoot = './data/junior-high/2023/'; await ctx.loadMapAsset('same.json');
+  assert.equal(requests.length, 2, 'School types must not share cache entries');
   console.log('PASS: lazy requests, reuse, stale-result cancellation, failure retry, bounded cache');
 })().catch(e => { console.error(e); process.exitCode=1; });

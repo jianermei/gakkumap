@@ -1,5 +1,21 @@
 # Change summary
 
+## School-type switch
+
+- Add elementary/junior-high selection with separate lazy-loaded datasets and per-type selection memory.
+- Keep the searched place when switching; clear the prior school and route and reject stale responses.
+- Package both datasets for deployment and add junior-high source attribution to the about page.
+- Standardize elementary exports under `data/elementary/2023/`; update runtime loading, exporter/verifier defaults and deployment paths.
+
+
+## Junior-high data preparation
+
+- Support 2023 A32 junior-high GeoJSON with separate export output and explicit dataset metadata.
+- Preserve original features and geometry; verify exports against source files.
+- Protect elementary exports from accidental school-type replacement and test both schemas.
+- Connect prepared junior-high data to the school-type switch and combined deployment package.
+
+
 ## About page
 
 - Add a Japanese about page with MLIT A27 2023 data attribution, coverage and accuracy limitations, and school-location and walking-route guidance.

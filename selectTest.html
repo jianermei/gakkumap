@@ -170,8 +170,9 @@ function clearSchoolBoundary() {
   <section class="school-panel" aria-label="学校とルート">
     <button id="sheet-handle" class="sheet-handle" type="button" aria-label="学校・ルート情報を隠す" aria-expanded="true" aria-controls="sheet-content"><span aria-hidden="true"></span></button>
     <div id="sheet-content">
+    <div class="school-type-switch" role="group" aria-label="学校種別"><button type="button" data-school-type="elementary" aria-pressed="true">小学校</button><button type="button" data-school-type="junior-high" aria-pressed="false">中学校</button></div>
     <div class="school-summary">
-      <div class="school-heading"><span class="eyebrow">調べたい学校</span><h2 id="school-title">学校を選択</h2><p id="school-location">都道府県・市区町村から探す</p></div>
+      <div class="school-heading"><span id="school-type-label" class="eyebrow">調べたい小学校</span><h2 id="school-title">学校を選択</h2><p id="school-location">都道府県・市区町村から探す</p></div>
       <button id="panel-toggle" type="button" aria-expanded="true" aria-controls="school-options">閉じる</button>
     </div>
     <div id="school-options">

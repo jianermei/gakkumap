@@ -28,7 +28,7 @@ def verify(source, output):
                 assert school['id'] in loaded[school['boundary']]
         fingerprint = lambda f: hashlib.sha256(encode(f)).hexdigest()
         exported = Counter(fingerprint(f) for chunk in loaded.values() for features in chunk.values() for f in features)
-        original = json.loads((source / ('A27-23_' + pref['code'] + '.geojson')).read_text(encoding='utf-8-sig'))
+        original = json.loads((source / (manifest.get('dataset', 'A27') + '-23_' + pref['code'] + '.geojson')).read_text(encoding='utf-8-sig'))
         assert exported == Counter(fingerprint(f) for f in original['features']), pref['code']
         all_paths.update(chunks)
         print(pref['code'] + ': all features and geometry preserved')
@@ -40,6 +40,6 @@ if __name__ == '__main__':
     root = Path(__file__).resolve().parents[1]
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', type=Path, default=root / 'map_data')
-    p.add_argument('--output', type=Path, default=root / 'data' / '2023')
+    p.add_argument('--output', type=Path, default=root / 'data' / 'elementary' / '2023')
     args = p.parse_args()
     verify(args.source, args.output)

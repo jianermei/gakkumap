@@ -24,13 +24,15 @@ class BuildTests(unittest.TestCase):
     def test_allowlist_hashes_and_configuration(self):
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp); data = self.fixture(base); out = base / 'dist'
-            report = builder.build(out, data, {})
+            report = builder.build(out, data, {}, junior_data=data)
+            self.assertTrue((out / 'data/junior-high/2023/manifest.json').exists())
+            self.assertTrue((out / 'data/elementary/2023/manifest.json').exists())
             self.assertFalse(report['configured'])
             about = (out / 'about.html').read_text()
             self.assertIn('./index.html', about)
             self.assertIn('./assets/style-', about)
             self.assertIn('2023年度', about)
-            self.assertFalse((out / 'data/2023/orphan.json').exists())
+            self.assertFalse((out / 'data/elementary/2023/orphan.json').exists())
             self.assertFalse((out / 'config.local.js').exists())
             self.assertFalse((out / 'map_data').exists())
             self.assertFalse((out / '.git').exists())
@@ -39,7 +41,7 @@ class BuildTests(unittest.TestCase):
             self.assertNotIn('?v=', html)
             self.assertIn('./assets/lazySchoolData-', html)
             first = sorted(str(p.relative_to(out)) for p in out.rglob('*') if p.is_file())
-            builder.build(out, data, {})
+            builder.build(out, data, {}, junior_data=data)
             self.assertEqual(first, sorted(str(p.relative_to(out)) for p in out.rglob('*') if p.is_file()))
             with self.assertRaises(ValueError): builder.build(out, data, {}, True)
             report = builder.build(out, data, {'apiKey': 'test-public-browser-key', 'mapId': 'test-map-id'}, True)
