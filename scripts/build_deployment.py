@@ -82,6 +82,8 @@ def build(output, data, config, require_config=False):
         for name in ASSETS:
             raw = (ROOT / name).read_bytes()
             destination = 'assets/' + Path(name).stem + '-' + hashlib.sha256(raw).hexdigest()[:16] + Path(name).suffix
+            if name == 'style.css':
+                stylesheet = destination
             target = staging / destination; target.parent.mkdir(exist_ok=True); target.write_bytes(raw)
             html, count = re.subn(r'\./' + re.escape(name) + r'(?:\?[^"\s]*)?', './' + destination, html)
             if count != 1:
@@ -91,6 +93,9 @@ def build(output, data, config, require_config=False):
                             '公開用 Google Maps 設定が未設定です。配信管理者にお問い合わせください。')
         html = html.replace('http://localhost:8000/selectTest.html', 'http://localhost:8000/')
         (staging / 'index.html').write_text(html, encoding='utf-8')
+        about = (ROOT / 'about.html').read_text(encoding='utf-8')
+        about = about.replace('./style.css', './' + stylesheet).replace('./selectTest.html', './index.html')
+        (staging / 'about.html').write_text(about, encoding='utf-8')
         (staging / 'config.js').write_text('window.GAKKUMAP_CONFIG = ' + json.dumps({
             'apiKey': key or 'YOUR_GOOGLE_MAPS_API_KEY', 'mapId': map_id or 'DEMO_MAP_ID'
         }, ensure_ascii=True) + ';\n', encoding='utf-8')

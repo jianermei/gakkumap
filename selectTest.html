@@ -154,7 +154,7 @@ function clearSchoolBoundary() {
 </head>
 <body>
 <main id="container" class="map-app">
-  <header class="app-header"><h1>学区マップ <span class="beta">BETA</span></h1><span class="header-note">学校と暮らしの距離を知る</span></header>
+  <header class="app-header"><h1>学区マップ <span class="beta">BETA</span></h1><a class="about-link" href="./about.html" target="_blank" rel="noopener">このサービスについて<span class="sr-only">（新しいタブで開きます）</span></a></header>
   <section class="map-stage" aria-label="学校と検索地点の地図">
     <div id="map_canvas"></div>
     <form id="place-search" class="place-search" role="search">
@@ -189,6 +189,7 @@ function clearSchoolBoundary() {
     <p id="walking-notices"></p>
     <div id="output" role="status" aria-live="polite"></div>
     <p id="school-location-note"></p>
+    <p class="data-notice">通学区域・学校位置・徒歩時間は参考情報です。最新の通学区域は自治体にご確認ください。<a href="./about.html#limitations" target="_blank" rel="noopener">データ・ご利用上の注意<span class="sr-only">（新しいタブで開きます）</span></a></p>
     <div class="panel-footer"><p class="pin-legend"><span class="school-dot"></span>学校 <span class="search-dot"></span>検索地点</p><details class="clear-menu"><summary>クリア</summary><div class="clear-actions"><button id="place-clear" type="button">検索地点を削除</button><button id="walking-clear" type="button">ルートを削除</button><button type="button" onclick="deletePoly()">学区・学校を削除</button></div></details></div>
     </div>
   </section>

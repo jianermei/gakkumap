@@ -80,3 +80,17 @@ input[type=radio] { accent-color: #216653; width: 18px; height: 18px; }
 .route-detail { color: #52685e; }
 #school-location-note { font-size: 12px; font-weight: 400; color: #64736b; line-height: 1.65; margin: 12px 0; }
 #school-location-note:empty { display: none; }
+
+.about-link { font-size: 12px; color: #245a49; padding: 10px 0; }
+.data-notice { font-size: 12px; line-height: 1.65; color: #64736b; }
+.data-notice a { display: block; color: #245a49; }
+.about-page { background: #f6f8f6; }
+.about-content { max-width: 760px; margin: 24px auto; padding: 24px; background: white; border-radius: 16px; line-height: 1.85; overflow-wrap: anywhere; }
+.about-content h1 { font-size: 26px; }
+.about-content h2 { font-size: 20px; margin-top: 28px; }
+.about-content a, .about-back { color: #216653; text-underline-offset: 3px; }
+.about-content li { margin: 10px 0; }
+.about-content ul { padding-left: 22px; }
+.about-important { padding: 16px; background: #edf6f0; border-left: 4px solid #216653; font-weight: 600; }
+.about-content footer { border-top: 1px solid #d7e1da; margin-top: 28px; padding-top: 16px; color: #64736b; font-size: 12px; }
+@media (max-width: 480px) { .about-content { margin: 12px; padding: 18px; } .about-link { font-size: 11px; } }

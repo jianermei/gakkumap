@@ -1,5 +1,11 @@
 # Change summary
 
+## About page
+
+- Add a Japanese about page with MLIT A27 2023 data attribution, coverage and accuracy limitations, and school-location and walking-route guidance.
+- Link from the header and results panel, preserving map state by opening a new tab.
+- Include the page in deployment with hashed styling and a working return-to-map link.
+
 ## Beta interface improvements
 
 - Replace the fixed desktop layout with a full-width mobile map, floating search field, and responsive desktop sidebar.

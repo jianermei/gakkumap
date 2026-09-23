@@ -26,6 +26,10 @@ class BuildTests(unittest.TestCase):
             base = Path(temp); data = self.fixture(base); out = base / 'dist'
             report = builder.build(out, data, {})
             self.assertFalse(report['configured'])
+            about = (out / 'about.html').read_text()
+            self.assertIn('./index.html', about)
+            self.assertIn('./assets/style-', about)
+            self.assertIn('2023年度', about)
             self.assertFalse((out / 'data/2023/orphan.json').exists())
             self.assertFalse((out / 'config.local.js').exists())
             self.assertFalse((out / 'map_data').exists())
