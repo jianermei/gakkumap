@@ -1,7 +1,7 @@
 // Explicit event collection: never pass form values, addresses or raw errors.
 (function () {
   'use strict';
-  var enabled = location.hostname === 'gakkumap-beta.pages.dev';
+  var enabled = ['gakkumap.com', 'gakkumap-beta.pages.dev'].indexOf(location.hostname) !== -1;
   var allowed = /^(page_view|school_type_changed|prefecture_selected|municipality_selected|school_selected|boundary_requested|boundary_displayed|boundary_failed|place_search_submitted|place_candidates_returned|place_candidate_selected|place_search_failed|walking_route_requested|walking_route_succeeded|walking_route_failed|clear_clicked|sheet_toggled)$/;
   window.trackUsage = function (event, properties) {
     if (!enabled || !allowed.test(event)) return;

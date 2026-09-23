@@ -7,6 +7,11 @@ function setup(host) {
 }
 const preview = setup('hash.gakkumap-beta.pages.dev');
 preview.trackUsage('page_view'); assert(!preview.dataLayer);
+['localhost', 'gakkumap.com.example.org'].forEach(host => assert(!setup(host).dataLayer));
+const production = setup('gakkumap.com');
+assert(production.dataLayer);
+assert(JSON.stringify(production.dataLayer).includes('https://gakkumap.com/'));
+assert(JSON.stringify(production.dataLayer).includes('G-BQH1G4QSHK'));
 const c = setup('gakkumap-beta.pages.dev');
 c.trackUsage('place_search_submitted',{query:'secret address',apiKey:'secret',duration_ms:12});
 const data = JSON.stringify(c.dataLayer);
