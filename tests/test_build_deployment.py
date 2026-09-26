@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('builder', ROOT / 'scripts/build_deployment.py')
@@ -28,6 +29,17 @@ class BuildTests(unittest.TestCase):
             self.assertTrue((out / 'data/junior-high/2023/manifest.json').exists())
             self.assertTrue((out / 'data/elementary/2023/manifest.json').exists())
             self.assertFalse(report['configured'])
+            sitemap = ET.parse(out / 'sitemap.xml')
+            urls = [node.text for node in sitemap.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
+            self.assertEqual(urls, ['https://gakkumap.com/', 'https://gakkumap.com/about', 'https://gakkumap.com/privacy'])
+            for page, url in zip(('index.html', 'about.html', 'privacy.html'), urls):
+                content = (out / page).read_text()
+                self.assertIn('rel="canonical" href="' + url + '"', content)
+                self.assertEqual(content.count('rel="canonical"'), 1)
+                self.assertEqual(content.count('name="description"'), 1)
+                self.assertNotIn('noindex', content)
+            self.assertIn('Sitemap: https://gakkumap.com/sitemap.xml', (out / 'robots.txt').read_text())
+            self.assertIn('id="how-to"', (out / 'about.html').read_text())
             about = (out / 'about.html').read_text()
             self.assertIn('./index.html', about)
             self.assertIn('./assets/style-', about)

@@ -3,7 +3,9 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-<title>学区検索マップ</title>
+<title>学区マップ｜小学校・中学校の通学区域と徒歩ルート</title>
+<link rel="canonical" href="https://gakkumap.com/">
+<meta name="description" content="小学校・中学校を選んで通学区域を地図に表示。気になる場所から学校までの徒歩ルートと所要時間を確認できます。2023年度の国土数値情報を使用。最新の指定校・通学区域は自治体にご確認ください。">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link rel="stylesheet" type="text/css" href="./style.css?v=candidates-2">
 <script src="./config.local.js"></script>
@@ -172,6 +174,7 @@ function clearSchoolBoundary() {
   <section class="school-panel" aria-label="学校とルート">
     <button id="sheet-handle" class="sheet-handle" type="button" aria-label="学校・ルート情報を隠す" aria-expanded="true" aria-controls="sheet-content"><span aria-hidden="true"></span></button>
     <div id="sheet-content">
+    <p class="map-intro">小学校・中学校の通学区域と徒歩ルートを確認。<a href="./about.html#how-to" target="_blank" rel="noopener">使い方<span class="sr-only">（新しいタブで開きます）</span></a></p>
     <div class="school-type-switch" role="group" aria-label="学校種別"><button type="button" data-school-type="elementary" aria-pressed="true">小学校</button><button type="button" data-school-type="junior-high" aria-pressed="false">中学校</button></div>
     <div class="school-summary">
       <div class="school-heading"><span id="school-type-label" class="eyebrow">調べたい小学校</span><h2 id="school-title">学校を選択</h2><p id="school-location">都道府県・市区町村から探す</p></div>
@@ -192,7 +195,7 @@ function clearSchoolBoundary() {
     <p id="walking-notices"></p>
     <div id="output" role="status" aria-live="polite"></div>
     <p id="school-location-note"></p>
-    <p class="data-notice">通学区域・学校位置・徒歩時間は参考情報です。最新の通学区域は自治体にご確認ください。<a href="./about.html#limitations" target="_blank" rel="noopener">データ・ご利用上の注意<span class="sr-only">（新しいタブで開きます）</span></a></p>
+    <p class="data-notice">2023年度の通学区域データを使用。通学区域・学校位置・徒歩時間は参考情報です。最新の通学区域は自治体にご確認ください。<a href="./about.html#limitations" target="_blank" rel="noopener">データ・ご利用上の注意<span class="sr-only">（新しいタブで開きます）</span></a></p>
     <div class="panel-footer"><p class="pin-legend"><span class="school-dot"></span>学校 <span class="search-dot"></span>検索地点</p><details class="clear-menu"><summary>クリア</summary><div class="clear-actions"><button id="place-clear" type="button">検索地点を削除</button><button id="walking-clear" type="button">ルートを削除</button><button type="button" onclick="deletePoly()">学区・学校を削除</button></div></details></div>
     </div>
   </section>
